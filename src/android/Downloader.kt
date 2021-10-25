@@ -45,6 +45,7 @@ class Downloader : CordovaPlugin() {
     override fun initialize(cordova: CordovaInterface?, webView: CordovaWebView?) {
         super.initialize(cordova, webView)
         context = cordova?.activity?.applicationContext!!
+        fetch.addListener(DownloaderListener(context))
         context.registerReceiver(receiver, IntentFilter(DownloaderListener.PROGRESS));
     }
 

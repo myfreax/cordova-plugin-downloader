@@ -7,7 +7,7 @@ import com.tonyodev.fetch2.Error
 import com.tonyodev.fetch2.FetchListener
 import com.tonyodev.fetch2core.DownloadBlock
 
-class DownloaderListener(val context: android.content.Context) : FetchListener {
+class DownloaderListener(private val context: android.content.Context) : FetchListener {
     private fun sendProgress(id: Int, progress: Int, downloadedBytesPerSecond: Long) {
         try {
             val intent = Intent()
@@ -23,7 +23,7 @@ class DownloaderListener(val context: android.content.Context) : FetchListener {
     }
 
     companion object{
-        val PROGRESS = "downloader.listener.progress"
+        const val PROGRESS = "downloader.listener.progress"
     }
     override fun onAdded(download: Download) {
         Log.d("fetchListener", download.progress.toString())
