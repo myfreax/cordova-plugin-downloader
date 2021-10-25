@@ -1,5 +1,11 @@
 # cordova-wiregurad-plugin
 
+## Prerequisites
+```
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+<uses-permission android:name="android.permission.INTERNET"/>
+```
 ## install
 ```bash
 cordova plugin add git@github.com:Bumoyu-com/cordova-plugin-downloader.git
