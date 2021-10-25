@@ -67,7 +67,7 @@ class Downloader : CordovaPlugin() {
 
     override fun onResume(multitasking: Boolean) {
         super.onResume(multitasking)
-        this.unregisterReceiver()
+        ///this.unregisterReceiver()
         this.registerReceiver()
     }
 
