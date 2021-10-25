@@ -21,6 +21,8 @@
 
 /* global cordova */
 var cordova = require('cordova');
+cordova.fireDocumentEvent('offline');
+
 var exec = require('cordova/exec');
 var channel = require('cordova/channel');
 var utils = require('cordova/utils');
@@ -64,44 +66,12 @@ var Downloader = {
     exec(success, err, 'Downloader', 'download', [url, file]);
   },
 
-  getProgress(success, err) {
-    exec(success, err, 'NetworkStatus', 'getProgress', []);
-  }
+  // getProgress(success, err) {
+  //   exec(success, err, 'Downloader', 'getProgress', []);
+  // }
 
 };
 
-channel.onCordovaReady.subscribe(function () {
-  Downloader.getProgress(function (info) {
-    cordova.fireDocumentEvent('progress');
-    // me.type = info;
-    // if (info === 'none') {
-    //   // set a timer if still offline at the end of timer send the offline event
-    //   timerId = setTimeout(function () {
-    //     cordova.fireDocumentEvent('offline');
-    //     timerId = null;
-    //   }, timeout);
-    // } else {
-    //   // If there is a current offline event pending clear it
-    //   if (timerId !== null) {
-    //     clearTimeout(timerId);
-    //     timerId = null;
-    //   }
-    //   cordova.fireDocumentEvent('online');
-    // }
-
-    // should only fire this once
-    // if (channel.onCordovaConnectionReady.state !== 2) {
-    //   channel.onCordovaConnectionReady.fire();
-    // }
-  },
-    function (e) {
-      // If we can't get the network info we should still tell Cordova
-      // to fire the deviceready event.
-      // if (channel.onCordovaConnectionReady.state !== 2) {
-      //   channel.onCordovaConnectionReady.fire();
-      // }
-      console.log('Error initializing Network Connection: ' + e);
-    });
-});
+cordova.fireDocumentEvent('progress');
 
 module.exports = Downloader;

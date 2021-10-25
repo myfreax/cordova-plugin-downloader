@@ -85,9 +85,6 @@ class Downloader : CordovaPlugin() {
                 val url = args?.getString(0).toString().trimIndent()
                 val file = args?.getString(1).toString().trimIndent()
                 download(url, file, callbackContext)
-                val pluginResult = PluginResult(PluginResult.Status.OK, -1)
-                pluginResult.keepCallback = true
-                callbackContext?.sendPluginResult(pluginResult)
                 return true
             }
             "pause" -> {
@@ -99,6 +96,11 @@ class Downloader : CordovaPlugin() {
                 val id = args?.getInt(0)!!
                 resume(id, callbackContext)
                 return true
+            }
+            "getProgress" -> {
+                val pluginResult = PluginResult(PluginResult.Status.OK, -1)
+                pluginResult.keepCallback = true
+                callbackContext?.sendPluginResult(pluginResult)
             }
             "getDownloads" -> {
                 getDownloads(callbackContext)
