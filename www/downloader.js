@@ -37,6 +37,10 @@ var Downloader = {
   resume(id, success, err) {
     exec(success, err, 'Downloader', 'resume', [id]);
   },
+
+  delete(ids, success, err) {
+    exec(success, err, 'Downloader', 'delete', ids);
+  },
   ///Query all downloads
   // getDownloads(success: (id: Download[]) => void, err: (msg: string) => void);
   getDownloads(success, err) {
@@ -66,12 +70,28 @@ var Downloader = {
     exec(success, err, 'Downloader', 'download', [url, file]);
   },
 
-  // getProgress(success, err) {
-  //   exec(success, err, 'Downloader', 'getProgress', []);
-  // }
-
 };
 
-cordova.fireDocumentEvent('progress');
+channel.createSticky('onCordovaConnectionReady');
+channel.waitForInitialization('onCordovaConnectionReady');
+
+channel.onCordovaReady.subscribe(() => {
+  exec(info => {
+    console.info(info)
+    cordova.fireDocumentEvent('progress');
+    // should only fire this once
+    if (channel.onCordovaConnectionReady.state !== 2) {
+      channel.onCordovaConnectionReady.fire();
+    }
+  },
+    e => {
+      // If we can't get the network info we should still tell Cordova
+      // to fire the deviceready event.
+      if (channel.onCordovaConnectionReady.state !== 2) {
+        channel.onCordovaConnectionReady.fire();
+      }
+      console.log('Error initializing: ' + e);
+    }, 'Downloader', 'progress', []);
+});
 
 module.exports = Downloader;

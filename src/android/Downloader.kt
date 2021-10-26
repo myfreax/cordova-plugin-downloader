@@ -16,6 +16,7 @@ import android.content.Intent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
+import com.google.gson.Gson
 import org.json.JSONObject
 
 class Downloader : CordovaPlugin() {
@@ -27,16 +28,16 @@ class Downloader : CordovaPlugin() {
             FetchConfiguration.Builder(context)
                 .setDownloadConcurrentLimit(3)
                 .build()
-        );
+        )
     }
 
     private val receiver by lazy {
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent) {
-                updateProgress(
+                sendProgress(
                     intent.getIntExtra("progress", -1),
                     intent.getIntExtra("id", -1),
-                    intent.getIntExtra("downloadedBytesPerSecond",0)
+                    intent.getIntExtra("downloadedBytesPerSecond", 0)
                 )
             }
         }
@@ -46,7 +47,7 @@ class Downloader : CordovaPlugin() {
         super.initialize(cordova, webView)
         context = cordova?.activity?.applicationContext!!
         fetch.addListener(DownloaderListener(context))
-        context.registerReceiver(receiver, IntentFilter(DownloaderListener.PROGRESS));
+        context.registerReceiver(receiver, IntentFilter(DownloaderListener.PROGRESS))
     }
 
     private fun unregisterReceiver() {
@@ -54,7 +55,7 @@ class Downloader : CordovaPlugin() {
     }
 
     private fun registerReceiver() {
-        context.registerReceiver(receiver, IntentFilter(DownloaderListener.PROGRESS));
+        context.registerReceiver(receiver, IntentFilter(DownloaderListener.PROGRESS))
     }
 
     override fun onDestroy() {
@@ -97,10 +98,14 @@ class Downloader : CordovaPlugin() {
                 resume(id, callbackContext)
                 return true
             }
-            "getProgress" -> {
+            "progress" -> {
                 val pluginResult = PluginResult(PluginResult.Status.OK, -1)
                 pluginResult.keepCallback = true
                 callbackContext?.sendPluginResult(pluginResult)
+                return true
+            }
+            "delete" -> {
+                delete(args, callbackContext)
             }
             "getDownloads" -> {
                 getDownloads(callbackContext)
@@ -133,15 +138,29 @@ class Downloader : CordovaPlugin() {
     private fun pause(id: Int, callbackContext: CallbackContext?): Int {
         try {
             fetch.pause(id)
+            callbackContext?.success(id)
         } catch (e: FetchException) {
             callbackContext?.error(e.message)
         }
         return id
     }
 
+    private fun delete(args: JSONArray?, callbackContext: CallbackContext?): JSONArray? {
+        try {
+            val ids =
+                GsonBuilder().create().fromJson(args.toString(), Array<Int>::class.java).toList()
+            fetch.delete(ids)
+            callbackContext?.success(args)
+        } catch (e: FetchException) {
+            callbackContext?.error(e.message)
+        }
+        return args
+    }
+
     private fun resume(id: Int, callbackContext: CallbackContext?): Int {
         try {
             fetch.resume(id)
+            callbackContext?.success(id)
         } catch (e: FetchException) {
             callbackContext?.error(e.message)
         }
@@ -159,13 +178,14 @@ class Downloader : CordovaPlugin() {
     }
 
     //intent.putExtra("downloadedBytesPerSecond",downloadedBytesPerSecond)
-    private fun updateProgress(id: Int, progress: Int, downloadedBytesPerSecond:Int) {
+    private fun sendProgress(id: Int, progress: Int, downloadedBytesPerSecond: Int) {
         if (callbackContext != null) {
             val jsonObject = JSONObject()
             jsonObject.put("id", id)
             jsonObject.put("progress", progress)
-            jsonObject.put("downloadedBytesPerSecond",downloadedBytesPerSecond)
-            val result = PluginResult(PluginResult.Status.OK, jsonObject)
+            jsonObject.put("downloadedBytesPerSecond", downloadedBytesPerSecond)
+            Log.d("fetchListener", "sendProgress sendPluginResult")
+            val result = PluginResult(PluginResult.Status.OK, 1)
             result.keepCallback = true
             callbackContext?.sendPluginResult(result)
         }

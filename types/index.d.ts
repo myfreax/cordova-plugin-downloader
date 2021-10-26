@@ -36,6 +36,12 @@ interface Downloder {
   );
   //Query all downloads
   getDownloads(success: (id: Download[]) => void, err: (msg: string) => void);
+
+  delete(
+    ids: number[],
+    success: (ids: number[]) => void,
+    err: (msg: string) => void
+  );
   //Get all downloads with a status
   getDownloadsWithStatus(
     status: string,
