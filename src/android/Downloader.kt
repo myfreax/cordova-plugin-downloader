@@ -139,16 +139,20 @@ class Downloader : CordovaPlugin() {
                 return true
             }
             "getDownloadsWithStatus" -> {
-                ///getDownloadsWithStatus(callbackContext)
-            }
-            "getConnectionInfo" -> {
-                val pluginResult = PluginResult(PluginResult.Status.OK, "connectionType")
-                pluginResult.keepCallback = true
-                callbackContext?.sendPluginResult(pluginResult)
-                return true
+                val status = args?.get(0).toString()
+                getDownloadsWithStatus(Status.valueOf(status),callbackContext)
             }
         }
         return false
+    }
+    private fun getDownloadsWithStatus(status:Status,callbackContext: CallbackContext?){
+        fetch.getDownloadsWithStatus(status,object :Func<List<Download>>{
+            override fun call(result: List<Download>) {
+                val json = GsonBuilder().disableHtmlEscaping().create().toJson(result)
+                val jsonArray = JSONArray(json)
+                callbackContext?.success(jsonArray)
+            }
+        })
     }
     private fun download(url: String, file: String, callbackContext: CallbackContext?): Int {
         val request = Request(url, file)

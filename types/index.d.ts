@@ -35,17 +35,36 @@ interface Downloder {
     err: (msg: string) => void
   );
   //Query all downloads
-  getDownloads(success: (id: Download[]) => void, err: (msg: string) => void);
+  getDownloads(
+    success: (downloads: Download[]) => void,
+    err: (msg: string) => void
+  );
 
   delete(
     ids: number[],
     success: (ids: number[]) => void,
     err: (msg: string) => void
   );
+  /**
+   *
+   * @param status
+   * @param success
+    0 -> NONE
+    1 -> QUEUED
+    2 -> DOWNLOADING
+    3 -> PAUSED
+    4 -> COMPLETED
+    5 -> CANCELLED
+    6 -> FAILED
+    7 -> REMOVED
+    8 -> DELETED
+    9 -> ADDED
+   */
   //Get all downloads with a status
   getDownloadsWithStatus(
-    status: string,
-    success: (id: Download[], err: (msg: string) => void) => void
+    status: number,
+    success: (downloads: Download[]) => void,
+    err: (msg: string) => void
   );
 }
 
