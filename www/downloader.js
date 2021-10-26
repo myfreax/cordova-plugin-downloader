@@ -25,7 +25,6 @@ cordova.fireDocumentEvent('offline');
 
 var exec = require('cordova/exec');
 var channel = require('cordova/channel');
-var utils = require('cordova/utils');
 
 
 var Downloader = {
@@ -77,8 +76,7 @@ channel.waitForInitialization('onCordovaConnectionReady');
 
 channel.onCordovaReady.subscribe(() => {
   exec(info => {
-    console.info(info)
-    cordova.fireDocumentEvent('progress');
+    cordova.fireDocumentEvent(info.event, info);
     // should only fire this once
     if (channel.onCordovaConnectionReady.state !== 2) {
       channel.onCordovaConnectionReady.fire();
@@ -91,7 +89,7 @@ channel.onCordovaReady.subscribe(() => {
         channel.onCordovaConnectionReady.fire();
       }
       console.log('Error initializing: ' + e);
-    }, 'Downloader', 'progress', []);
+    }, 'Downloader', 'listen', []);
 });
 
 module.exports = Downloader;

@@ -43,10 +43,82 @@ function onDeviceReady() {
     Downloader.pause(id)
 
     Downloader.resume(id)
-    document.addEventListener('progress', (download) => {
+    
+    document.addEventListener('onProgress', (download) => {
         console.info(download.id)
         console.info(download.pregress)
         console.info(download.downloadedBytesPerSecond)
+    }, false);
+
+    document.addEventListener('onAdded', function (e) {
+        console.info(e)
+        console.info('Event of type: onAdded')
+    }, false);
+
+    document.addEventListener('onCancelled', function (e) {
+        console.info(e)
+        console.info('Event of type: onCancelled')
+    }, false);
+
+
+    document.addEventListener('onCompleted', function (e) {
+        console.info(e)
+        console.info('Event of type: onCompleted')
+    }, false);
+
+    document.addEventListener('onDeleted', function (e) {
+        console.info(e)
+        console.info('Event of type: onDeleted')
+    }, false);
+
+    document.addEventListener('onDownloadBlockUpdated', function (e) {
+        console.info(e)
+        console.info('Event of type: onDownloadBlockUpdated')
+    }, false);
+
+    document.addEventListener('onError', function (e) {
+        console.info(e)
+        console.info('Event of type: onError')
+    }, false);
+
+    document.addEventListener('onPaused', function (e) {
+        console.info(e)
+        console.info('Event of type: onPaused')
+    }, false);
+
+
+    document.addEventListener('onProgress', function (e) {
+        console.info(e)
+        console.info('Event of type: onProgress')
+    }, false);
+
+
+    document.addEventListener('onQueued', function (e) {
+        console.info(e)
+        console.info('Event of type: onQueued')
+    }, false);
+
+    document.addEventListener('onRemoved', function (e) {
+        console.info(e)
+        console.info('Event of type: onRemoved')
+    }, false);
+
+
+    document.addEventListener('onResumed', function (e) {
+        console.info(e)
+        console.info('Event of type: onResumed')
+    }, false);
+
+
+    document.addEventListener('onStarted', function (e) {
+        console.info(e)
+        console.info('Event of type: onStarted')
+    }, false);
+
+
+    document.addEventListener('onWaitingNetwork', function (e) {
+        console.info(e)
+        console.info('Event of type: onWaitingNetwork')
     }, false);
     
 }

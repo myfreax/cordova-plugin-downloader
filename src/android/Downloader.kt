@@ -16,13 +16,13 @@ import android.content.Intent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
-import com.google.gson.Gson
 import org.json.JSONObject
 
 class Downloader : CordovaPlugin() {
     private val TAG = "Downloader"
     private lateinit var context: Context
     private var callbackContext: CallbackContext? = null
+    private var listenCallbackContext: CallbackContext? = null
     private val fetch by lazy {
         Fetch.Impl.getInstance(
             FetchConfiguration.Builder(context)
@@ -34,11 +34,37 @@ class Downloader : CordovaPlugin() {
     private val receiver by lazy {
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent) {
-                sendProgress(
-                    intent.getIntExtra("progress", -1),
-                    intent.getIntExtra("id", -1),
-                    intent.getIntExtra("downloadedBytesPerSecond", 0)
-                )
+                val download = intent.getParcelableExtra<Download>("Download")
+                val downloadJson = GsonBuilder().disableHtmlEscaping().create().toJson(download)
+                val jsonObject = JSONObject(downloadJson)
+                val event = intent.getStringExtra("event")
+                jsonObject.put("event", event)
+                when (event) {
+                    "onDownloadBlockUpdated" -> {
+                        val totalBlocks = intent.getIntExtra("totalBlocks", 0)
+                        jsonObject.put("totalBlocks", totalBlocks)
+                    }
+                    "onError" -> {
+                        val message = intent.getStringExtra("message")
+                        jsonObject.put("message", message)
+                    }
+                    "onProgress" -> {
+                        val progress = intent.getIntExtra("progress", 0)
+                        val downloadedBytesPerSecond =
+                            intent.getLongExtra("downloadedBytesPerSecond", 0)
+                        jsonObject.put("progress", progress)
+                        jsonObject.put("downloadedBytesPerSecond", downloadedBytesPerSecond)
+                    }
+                    "onQueued" -> {
+                        val waitingOnNetwork = intent.getBooleanExtra("waitingOnNetwork", false)
+                        jsonObject.put("waitingOnNetwork", waitingOnNetwork)
+                    }
+                    "onStarted" -> {
+                        val totalBlocks = intent.getIntExtra("totalBlocks", 0)
+                        jsonObject.put("totalBlocks", totalBlocks)
+                    }
+                }
+                sendToJavascript(jsonObject)
             }
         }
     }
@@ -47,7 +73,7 @@ class Downloader : CordovaPlugin() {
         super.initialize(cordova, webView)
         context = cordova?.activity?.applicationContext!!
         fetch.addListener(DownloaderListener(context))
-        context.registerReceiver(receiver, IntentFilter(DownloaderListener.PROGRESS))
+        context.registerReceiver(receiver, IntentFilter(DownloaderListener.INTENTACTION))
     }
 
     private fun unregisterReceiver() {
@@ -55,7 +81,7 @@ class Downloader : CordovaPlugin() {
     }
 
     private fun registerReceiver() {
-        context.registerReceiver(receiver, IntentFilter(DownloaderListener.PROGRESS))
+        context.registerReceiver(receiver, IntentFilter(DownloaderListener.INTENTACTION))
     }
 
     override fun onDestroy() {
@@ -98,10 +124,11 @@ class Downloader : CordovaPlugin() {
                 resume(id, callbackContext)
                 return true
             }
-            "progress" -> {
-                val pluginResult = PluginResult(PluginResult.Status.OK, -1)
+            "listen" -> {
+                listenCallbackContext = callbackContext
+                val pluginResult = PluginResult(PluginResult.Status.NO_RESULT)
                 pluginResult.keepCallback = true
-                callbackContext?.sendPluginResult(pluginResult)
+                listenCallbackContext?.sendPluginResult(pluginResult)
                 return true
             }
             "delete" -> {
@@ -114,10 +141,15 @@ class Downloader : CordovaPlugin() {
             "getDownloadsWithStatus" -> {
                 ///getDownloadsWithStatus(callbackContext)
             }
+            "getConnectionInfo" -> {
+                val pluginResult = PluginResult(PluginResult.Status.OK, "connectionType")
+                pluginResult.keepCallback = true
+                callbackContext?.sendPluginResult(pluginResult)
+                return true
+            }
         }
         return false
     }
-
     private fun download(url: String, file: String, callbackContext: CallbackContext?): Int {
         val request = Request(url, file)
         request.priority = Priority.HIGH
@@ -177,18 +209,9 @@ class Downloader : CordovaPlugin() {
         })
     }
 
-    //intent.putExtra("downloadedBytesPerSecond",downloadedBytesPerSecond)
-    private fun sendProgress(id: Int, progress: Int, downloadedBytesPerSecond: Int) {
-        if (callbackContext != null) {
-            val jsonObject = JSONObject()
-            jsonObject.put("id", id)
-            jsonObject.put("progress", progress)
-            jsonObject.put("downloadedBytesPerSecond", downloadedBytesPerSecond)
-            Log.d("fetchListener", "sendProgress sendPluginResult")
-            val result = PluginResult(PluginResult.Status.OK, 1)
-            result.keepCallback = true
-            callbackContext?.sendPluginResult(result)
-        }
-        //webView.postMessage("networkconnection", type)
+    private fun sendToJavascript(jsonObject: JSONObject) {
+        val result = PluginResult(PluginResult.Status.OK, jsonObject)
+        result.keepCallback = true
+        listenCallbackContext?.sendPluginResult(result)
     }
 }
