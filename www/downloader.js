@@ -71,23 +71,23 @@ var Downloader = {
 
 };
 
-channel.createSticky('onCordovaConnectionReady');
-channel.waitForInitialization('onCordovaConnectionReady');
+// channel.createSticky('onCordovaConnectionReady');
+// channel.waitForInitialization('onCordovaConnectionReady');
 
 channel.onCordovaReady.subscribe(() => {
   exec(info => {
     cordova.fireDocumentEvent(info.event, info);
     // should only fire this once
-    if (channel.onCordovaConnectionReady.state !== 2) {
-      channel.onCordovaConnectionReady.fire();
-    }
+    // if (channel.onCordovaConnectionReady.state !== 2) {
+    //   channel.onCordovaConnectionReady.fire();
+    // }
   },
     e => {
       // If we can't get the network info we should still tell Cordova
       // to fire the deviceready event.
-      if (channel.onCordovaConnectionReady.state !== 2) {
-        channel.onCordovaConnectionReady.fire();
-      }
+      // if (channel.onCordovaConnectionReady.state !== 2) {
+      //   channel.onCordovaConnectionReady.fire();
+      // }
       console.log('Error initializing: ' + e);
     }, 'Downloader', 'listen', []);
 });
