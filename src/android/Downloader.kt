@@ -17,7 +17,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
 import org.json.JSONObject
-
+import com.tonyodev.fetch2.Status
 class Downloader : CordovaPlugin() {
     private val TAG = "Downloader"
     private lateinit var context: Context
