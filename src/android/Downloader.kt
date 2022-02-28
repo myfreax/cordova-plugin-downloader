@@ -26,7 +26,7 @@ class Downloader : CordovaPlugin() {
     private val fetch by lazy {
         Fetch.Impl.getInstance(
             FetchConfiguration.Builder(context)
-                .setDownloadConcurrentLimit(3)
+                .setDownloadConcurrentLimit(1)
                 .build()
         )
     }
