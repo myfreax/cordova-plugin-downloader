@@ -133,6 +133,7 @@ class Downloader : CordovaPlugin() {
             }
             "delete" -> {
                 delete(args, callbackContext)
+                return true
             }
             "getDownloads" -> {
                 getDownloads(callbackContext)
@@ -141,6 +142,7 @@ class Downloader : CordovaPlugin() {
             "getDownloadsWithStatus" -> {
                 val status = args?.get(0).toString()
                 getDownloadsWithStatus(Status.valueOf(status),callbackContext)
+                return true
             }
         }
         return false
