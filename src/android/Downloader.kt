@@ -18,6 +18,7 @@ import android.content.Context
 import android.content.IntentFilter
 import org.json.JSONObject
 import com.tonyodev.fetch2.Status
+
 class Downloader : CordovaPlugin() {
     private val TAG = "Downloader"
     private lateinit var context: Context
@@ -135,20 +136,25 @@ class Downloader : CordovaPlugin() {
                 delete(args, callbackContext)
                 return true
             }
+            "remove" -> {
+                remove(args,callbackContext)
+                return true
+            }
             "getDownloads" -> {
                 getDownloads(callbackContext)
                 return true
             }
             "getDownloadsWithStatus" -> {
                 val status = args?.get(0).toString()
-                getDownloadsWithStatus(Status.valueOf(status),callbackContext)
+                getDownloadsWithStatus(Status.valueOf(status), callbackContext)
                 return true
             }
         }
         return false
     }
-    private fun getDownloadsWithStatus(status:Status,callbackContext: CallbackContext?){
-        fetch.getDownloadsWithStatus(status,object :Func<List<Download>>{
+
+    private fun getDownloadsWithStatus(status: Status, callbackContext: CallbackContext?) {
+        fetch.getDownloadsWithStatus(status, object : Func<List<Download>> {
             override fun call(result: List<Download>) {
                 val json = GsonBuilder().disableHtmlEscaping().create().toJson(result)
                 val jsonArray = JSONArray(json)
@@ -156,6 +162,7 @@ class Downloader : CordovaPlugin() {
             }
         })
     }
+
     private fun download(url: String, file: String, callbackContext: CallbackContext?): Int {
         val request = Request(url, file)
         request.priority = Priority.HIGH
@@ -181,6 +188,18 @@ class Downloader : CordovaPlugin() {
             callbackContext?.error(e.message)
         }
         return id
+    }
+
+    private fun remove(args: JSONArray?, callbackContext: CallbackContext?): JSONArray? {
+        try {
+            val ids =
+                GsonBuilder().create().fromJson(args.toString(), Array<Int>::class.java).toList()
+            fetch.remove(ids)
+            callbackContext?.success(args)
+        } catch (e: FetchException) {
+            callbackContext?.error(e.message)
+        }
+        return args
     }
 
     private fun delete(args: JSONArray?, callbackContext: CallbackContext?): JSONArray? {

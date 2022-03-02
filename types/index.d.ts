@@ -45,6 +45,12 @@ interface Downloder {
     success: (ids: number[]) => void,
     err: (msg: string) => void
   );
+
+  remove(
+    ids: number[],
+    success: (ids: number[]) => void,
+    err: (msg: string) => void
+  );
   /**
    *
    * @param status

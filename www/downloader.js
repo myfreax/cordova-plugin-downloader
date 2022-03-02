@@ -40,6 +40,10 @@ var Downloader = {
   delete(ids, success, err) {
     exec(success, err, 'Downloader', 'delete', ids);
   },
+
+  remove(ids, success, err) {
+    exec(success, err, 'Downloader', 'remove', ids);
+  },
   ///Query all downloads
   // getDownloads(success: (id: Download[]) => void, err: (msg: string) => void);
   getDownloads(success, err) {
