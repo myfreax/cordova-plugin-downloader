@@ -24,7 +24,7 @@ class Downloader : CordovaPlugin() {
     private lateinit var context: Context
     private var callbackContext: CallbackContext? = null
     private var listenCallbackContext: CallbackContext? = null
-    private var serviceIsStarted:Boolean = false
+    private var serviceIsStarted: Boolean = false
     private val fetch by lazy {
         Fetch.Impl.getInstance(
             FetchConfiguration.Builder(context)
@@ -50,6 +50,7 @@ class Downloader : CordovaPlugin() {
                     jsonObject = JSONObject("{}")
                     val tasks = intent.getStringExtra("tasks")
                     jsonObject.put("tasks", tasks)
+                    ///jsonObject.put("timestap",)
                 } else {
                     val download = intent.getParcelableExtra<Download>("Download")
                     val downloadJson = gsonDisableHtmlEscaping.toJson(download)
@@ -182,7 +183,7 @@ class Downloader : CordovaPlugin() {
     }
 
     private fun startTimeoutCheck(args: JSONArray?, callbackContext: CallbackContext?) {
-        if (serviceIsStarted){
+        if (serviceIsStarted) {
             callbackContext?.success(1)
             return
         }
@@ -209,12 +210,13 @@ class Downloader : CordovaPlugin() {
                 val tasks = ProgressMonitorService.getTimeoutTasks()
                 results.map {
                     val download = it
-                    tasks?.find { download.id == it.id }?.setLatestDownload(download)
+                    tasks?.downloads?.find { download.id == it.id }?.setLatestDownload(download)
+                    //tasks?.find { download.id == it.id }?.setLatestDownload(download)
                 }
-                val res = tasks?.filter { !it.progressISChanged() }
+                val res = tasks?.downloads?.filter { !it.progressISChanged() }
                 val json = gsonDisableHtmlEscaping.toJson(res)
-                val jsonArray = JSONArray(json)
-                callbackContext?.success(jsonArray)
+                ///val jsonArray = JSONArray(json)
+                callbackContext?.success(json)
             }
         })
     }
@@ -259,7 +261,7 @@ class Downloader : CordovaPlugin() {
     private fun remove(args: JSONArray?, callbackContext: CallbackContext?): JSONArray? {
         try {
             val ids =
-                GsonBuilder().create().fromJson(args.toString(), Array<Int>::class.java).toList()
+                gsonBuilder.fromJson(args.toString(), Array<Int>::class.java).toList()
             fetch.remove(ids)
             callbackContext?.success(args)
         } catch (e: FetchException) {
@@ -271,7 +273,7 @@ class Downloader : CordovaPlugin() {
     private fun delete(args: JSONArray?, callbackContext: CallbackContext?): JSONArray? {
         try {
             val ids =
-                GsonBuilder().create().fromJson(args.toString(), Array<Int>::class.java).toList()
+                gsonBuilder.fromJson(args.toString(), Array<Int>::class.java).toList()
             fetch.delete(ids)
             callbackContext?.success(args)
         } catch (e: FetchException) {

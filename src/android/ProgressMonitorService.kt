@@ -16,8 +16,7 @@ import kotlin.properties.Delegates
 class ProgressMonitorService : Service() {
 
     companion object {
-        private var tasks: List<Task> = listOf()
-        const val INTENTACTION = "downloader.listener.action"
+        private var tasks: Tasks? = null
         const val TAG = "ProgressMonitorService"
         private lateinit var fetch: Fetch
         private var interval by Delegates.notNull<Long>()
@@ -36,7 +35,7 @@ class ProgressMonitorService : Service() {
             context.stopService(intent)
         }
 
-        fun getTimeoutTasks(): List<Task>? {
+        fun getTimeoutTasks():Tasks? {
             return tasks
         }
     }
@@ -90,6 +89,7 @@ class ProgressMonitorService : Service() {
     }
 
     private fun run(interval: Long, time: Int) {
+        val tasks = Tasks(System.currentTimeMillis())
         var downloads = arrayOf<Download>()
         var counter = 0
         val itl = SetInterval((interval / time))
@@ -98,7 +98,7 @@ class ProgressMonitorService : Service() {
                 itl.cancel()
             }
             if (counter == time) {
-                val tasks = downloads.map {
+                val results = downloads.map {
                     it.id
                 }.distinct().map {
                     val task = Task(it)
@@ -108,6 +108,7 @@ class ProgressMonitorService : Service() {
                     }
                     task
                 }.filter { !it.progressISChanged() }
+                tasks.downloads  = results
                 ProgressMonitorService.tasks = tasks
                 val tasksString = gson.toJson(tasks)
                 if (!tasksString.isNullOrEmpty()) {
