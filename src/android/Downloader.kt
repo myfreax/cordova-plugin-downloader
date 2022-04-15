@@ -33,6 +33,14 @@ class Downloader : CordovaPlugin() {
         )
     }
 
+    private val gsonDisableHtmlEscaping by lazy {
+        GsonBuilder().disableHtmlEscaping().create()
+    }
+
+    private val gsonBuilder by lazy {
+        GsonBuilder().create()
+    }
+
     private val receiver by lazy {
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent) {
@@ -44,7 +52,7 @@ class Downloader : CordovaPlugin() {
                     jsonObject.put("tasks", tasks)
                 } else {
                     val download = intent.getParcelableExtra<Download>("Download")
-                    val downloadJson = GsonBuilder().disableHtmlEscaping().create().toJson(download)
+                    val downloadJson = gsonDisableHtmlEscaping.toJson(download)
                     jsonObject = JSONObject(downloadJson)
                 }
                 jsonObject.put("event", event)
@@ -196,16 +204,25 @@ class Downloader : CordovaPlugin() {
     }
 
     private fun getTimeoutTasks(callbackContext: CallbackContext?) {
-        val json = GsonBuilder().disableHtmlEscaping().create()
-            .toJson(ProgressMonitorService.getTimeoutTasks())
-        val jsonArray = JSONArray(json)
-        callbackContext?.success(jsonArray)
+        fetch.getDownloads(object : Func<List<Download>> {
+            override fun call(results: List<Download>) {
+                val tasks = ProgressMonitorService.getTimeoutTasks()
+                results.map {
+                    val download = it
+                    tasks?.find { download.id == it.id }?.setLatestDownload(download)
+                }
+                val res = tasks?.filter { !it.progressISChanged() }
+                val json = gsonDisableHtmlEscaping.toJson(res)
+                val jsonArray = JSONArray(json)
+                callbackContext?.success(jsonArray)
+            }
+        })
     }
 
     private fun getDownloadsWithStatus(status: Status, callbackContext: CallbackContext?) {
         fetch.getDownloadsWithStatus(status, object : Func<List<Download>> {
             override fun call(result: List<Download>) {
-                val json = GsonBuilder().disableHtmlEscaping().create().toJson(result)
+                val json = gsonDisableHtmlEscaping.toJson(result)
                 val jsonArray = JSONArray(json)
                 callbackContext?.success(jsonArray)
             }
@@ -276,7 +293,7 @@ class Downloader : CordovaPlugin() {
     private fun getDownloads(callbackContext: CallbackContext?) {
         fetch.getDownloads(object : Func<List<Download>> {
             override fun call(result: List<Download>) {
-                val json = GsonBuilder().disableHtmlEscaping().create().toJson(result)
+                val json = gsonDisableHtmlEscaping.toJson(result)
                 val jsonArray = JSONArray(json)
                 callbackContext?.success(jsonArray)
             }

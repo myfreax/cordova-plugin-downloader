@@ -22,7 +22,7 @@ class ProgressMonitorService : Service() {
         private lateinit var fetch: Fetch
         private var interval by Delegates.notNull<Long>()
         private var time: Int by Delegates.notNull<Int>()
-        private var serviceIsDestroy:Boolean = false
+        private var serviceIsDestroy: Boolean = false
         fun start(context: Context, fetch: Fetch, interval: Long, time: Int) {
             this.time = time
             this.interval = interval
@@ -94,7 +94,7 @@ class ProgressMonitorService : Service() {
         var counter = 0
         val itl = SetInterval((interval / time))
         itl.execute {
-            if (serviceIsDestroy){
+            if (serviceIsDestroy) {
                 itl.cancel()
             }
             if (counter == time) {
@@ -102,7 +102,7 @@ class ProgressMonitorService : Service() {
                     it.id
                 }.distinct().map {
                     val task = Task(it)
-                    task.setDownload(downloads)
+                    task.setLatestDownload(downloads)
                     downloads.filter { it.id == task.id }.forEach {
                         task.addProgress(it.progress)
                     }
