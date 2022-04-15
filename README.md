@@ -58,6 +58,10 @@ function onDeviceReady() {
         Downloader.getTimeoutTasks((e) => console.info(e), (err) => { console.info(err) })
     }
 
+    document.addEventListener("onTimeoutTasks", (e) => {
+        console.info(JSON.parse(e.tasks))
+    }, false)
+
     
     document.addEventListener('onProgress', (download) => {
         console.info(download.id)
