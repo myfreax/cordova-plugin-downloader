@@ -43,6 +43,21 @@ function onDeviceReady() {
     Downloader.pause(id)
 
     Downloader.resume(id)
+
+
+    
+    document.getElementById("Start").onclick = function () {
+        //6秒内执行6次数据采集
+        Downloader.startTimeoutCheck(6000, 6, () => { console.info("started"), (err) => { console.info(err) } });
+    }
+    document.getElementById("Stop").onclick = function () {
+        Downloader.stopTimeoutCheck((e) => console.info("service stop success"), (err) => { console.info("service stop fail") })
+    }
+
+    document.getElementById("GetTimeoutTask").onclick = function () {
+        Downloader.getTimeoutTasks((e) => console.info(e), (err) => { console.info(err) })
+    }
+
     
     document.addEventListener('onProgress', (download) => {
         console.info(download.id)

@@ -28,6 +28,15 @@ var channel = require('cordova/channel');
 
 
 var Downloader = {
+  startTimeoutCheck(interval, time, success, err) {
+    exec(success, err, 'Downloader', 'startTimeoutCheck', [interval, time]);
+  },
+  stopTimeoutCheck(success, err) {
+    exec(success, err, 'Downloader', 'stopTimeoutCheck', []);
+  },
+  getTimeoutTasks(success, err) {
+    exec(success, err, 'Downloader', 'getTimeoutTasks', []);
+  },
   //pause(id: number, success: (id: number) => void, err: (msg: string) => void);
   pause(id, success, err) {
     exec(success, err, 'Downloader', 'pause', [id]);

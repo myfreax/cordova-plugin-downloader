@@ -24,6 +24,7 @@ class Downloader : CordovaPlugin() {
     private lateinit var context: Context
     private var callbackContext: CallbackContext? = null
     private var listenCallbackContext: CallbackContext? = null
+    private var serviceIsStarted:Boolean = false
     private val fetch by lazy {
         Fetch.Impl.getInstance(
             FetchConfiguration.Builder(context)
@@ -35,10 +36,17 @@ class Downloader : CordovaPlugin() {
     private val receiver by lazy {
         object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent) {
-                val download = intent.getParcelableExtra<Download>("Download")
-                val downloadJson = GsonBuilder().disableHtmlEscaping().create().toJson(download)
-                val jsonObject = JSONObject(downloadJson)
                 val event = intent.getStringExtra("event")
+                val jsonObject: JSONObject
+                if (event == "onTimeoutTasks") {
+                    jsonObject = JSONObject("{}")
+                    val tasks = intent.getStringExtra("tasks")
+                    jsonObject.put("tasks", tasks)
+                } else {
+                    val download = intent.getParcelableExtra<Download>("Download")
+                    val downloadJson = GsonBuilder().disableHtmlEscaping().create().toJson(download)
+                    jsonObject = JSONObject(downloadJson)
+                }
                 jsonObject.put("event", event)
                 when (event) {
                     "onDownloadBlockUpdated" -> {
@@ -109,6 +117,18 @@ class Downloader : CordovaPlugin() {
         this.callbackContext = callbackContext
         ///super.execute(action, args, callbackContext)
         when (action) {
+            "stopTimeoutCheck" -> {
+                stopTimeoutCheck()
+                return true
+            }
+            "startTimeoutCheck" -> {
+                startTimeoutCheck(args, callbackContext)
+                return true
+            }
+            "getTimeoutTasks" -> {
+                getTimeoutTasks(callbackContext)
+                return true
+            }
             "download" -> {
                 val url = args?.getString(0).toString().trimIndent()
                 val file = args?.getString(1).toString().trimIndent()
@@ -137,7 +157,7 @@ class Downloader : CordovaPlugin() {
                 return true
             }
             "remove" -> {
-                remove(args,callbackContext)
+                remove(args, callbackContext)
                 return true
             }
             "getDownloads" -> {
@@ -151,6 +171,35 @@ class Downloader : CordovaPlugin() {
             }
         }
         return false
+    }
+
+    private fun startTimeoutCheck(args: JSONArray?, callbackContext: CallbackContext?) {
+        if (serviceIsStarted){
+            callbackContext?.success(1)
+            return
+        }
+
+        val interval = args?.getLong(0)!!
+        val time = args.getInt(1)
+        if (interval.toInt() == 0) {
+            callbackContext?.error("interval can not eq 0")
+        }
+        ProgressMonitorService.start(context, fetch, interval, time)
+        serviceIsStarted = true
+        callbackContext?.success(1)
+    }
+
+    private fun stopTimeoutCheck() {
+        ProgressMonitorService.stop(context)
+        serviceIsStarted = false
+        callbackContext?.success(1)
+    }
+
+    private fun getTimeoutTasks(callbackContext: CallbackContext?) {
+        val json = GsonBuilder().disableHtmlEscaping().create()
+            .toJson(ProgressMonitorService.getTimeoutTasks())
+        val jsonArray = JSONArray(json)
+        callbackContext?.success(jsonArray)
     }
 
     private fun getDownloadsWithStatus(status: Status, callbackContext: CallbackContext?) {

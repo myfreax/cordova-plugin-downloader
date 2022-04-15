@@ -20,10 +20,20 @@ interface Download {
   id: number;
 }
 
+interface TimeoutTasks {
+
+}
+
 /**
  * The StatusBar object provides some functions to customize the iOS and Android StatusBar.
  */
 interface Downloder {
+  startTimeoutCheck(interval: number, time: number, success: (id: number) => void, err: (msg: string) => void);
+  stopTimeoutCheck(success: (id: number) => void, err: (msg: string) => void);
+  getTimeoutTasks(success: (tasks: TimeoutTasks) => void, err: (msg: string) => void);
+  // stopTimeoutCheck(success, err) {
+  //   exec(success, err, 'Downloader', 'stopTimeoutCheck', []);
+  // };
   //pause a download
   pause(id: number, success: (id: number) => void, err: (msg: string) => void);
   //resume a download
