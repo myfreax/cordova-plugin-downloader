@@ -22,7 +22,9 @@ class ProgressMonitorService : Service() {
         private var interval by Delegates.notNull<Long>()
         private var time: Int by Delegates.notNull<Int>()
         private var serviceIsDestroy: Boolean = false
+        private var cancelLastSend:Boolean = false
         fun start(context: Context, fetch: Fetch, interval: Long, time: Int) {
+            cancelLastSend = false
             this.time = time
             this.interval = interval
             this.fetch = fetch
@@ -31,6 +33,7 @@ class ProgressMonitorService : Service() {
         }
 
         fun stop(context: Context) {
+            serviceIsDestroy = true
             val intent = Intent(context, ProgressMonitorService::class.java)
             context.stopService(intent)
         }
@@ -111,7 +114,7 @@ class ProgressMonitorService : Service() {
                 tasks.downloads  = results
                 ProgressMonitorService.tasks = tasks
                 val tasksString = gson.toJson(tasks)
-                if (!tasksString.isNullOrEmpty()) {
+                if (!tasksString.isNullOrEmpty() && !cancelLastSend) {
                     send(tasksString)
                 }
                 itl.cancel()
@@ -134,7 +137,8 @@ class ProgressMonitorService : Service() {
     }
 
     override fun onDestroy() {
-        serviceIsDestroy = true
+        cancelLastSend = true
+        serviceIsDestroy = false
         //itl.cancel()
         setInterval.cancel()
         super.onDestroy()
