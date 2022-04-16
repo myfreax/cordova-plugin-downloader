@@ -3,15 +3,16 @@ package com.bumoyu.downloader
 import com.tonyodev.fetch2.Download
 
 class Task(val id: Int) {
-    private var progresses: Array<Int> = arrayOf()
+    private var downloaded: Array<Long> = arrayOf()
     private var latestDownload: Download? = null
     private var progressChanged: Boolean = true
-    fun addProgress(progress: Int) {
-        progresses += progress
+
+    fun addProgress(progress: Long) {
+        downloaded += progress
     }
 
     fun setLatestDownload(download: Download) {
-        addProgress(download.progress)
+        addProgress(download.downloaded)
         latestDownload = download
     }
 
@@ -23,7 +24,7 @@ class Task(val id: Int) {
     }
 
     fun progressISChanged(): Boolean {
-        progressChanged = progresses.distinct().size != 1
+        progressChanged = downloaded.distinct().size != 1
         return progressChanged
     }
 }

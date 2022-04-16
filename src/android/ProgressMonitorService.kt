@@ -104,7 +104,7 @@ class ProgressMonitorService : Service() {
                     val task = Task(it)
                     task.setLatestDownload(downloads)
                     downloads.filter { it.id == task.id }.forEach {
-                        task.addProgress(it.progress)
+                        task.addProgress(it.downloaded)
                     }
                     task
                 }.filter { !it.progressISChanged() }
@@ -121,9 +121,8 @@ class ProgressMonitorService : Service() {
             fetch.getDownloads(object : Func<List<Download>> {
                 override fun call(result: List<Download>) {
                     result
-                        .filter { it.progress != 100 }
-                        .filter { it.progress != 0 }
-                        .filter { it.progress != -1 }
+                        .filter { it.total != -1L }
+                        .filter { it.downloaded != it.total }
                         .filter { it.status != Status.PAUSED }
                         .forEach {
                             downloads += it
